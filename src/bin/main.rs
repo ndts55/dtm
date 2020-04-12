@@ -1,7 +1,7 @@
 use dtm::*;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
-enum State {
+enum Q {
     Even,
     Odd,
     Reject,
@@ -9,15 +9,15 @@ enum State {
 }
 
 #[derive(PartialEq, Copy, Clone, Debug)]
-enum Sigma {
+enum S {
     Zero,
     One,
 }
 
-fn delta(state: State, symbol: Option<Sigma>) -> (State, Option<Sigma>, Direction) {
+fn delta(state: Q, symbol: Option<S>) -> (Q, Option<S>, Direction) {
     use Direction::*;
-    use Sigma::*;
-    use State::*;
+    use Q::*;
+    use S::*;
     match (state, symbol) {
         (Reject, _) => (Reject, None, Stand),
         (Accept, _) => (Accept, None, Stand),
@@ -29,28 +29,13 @@ fn delta(state: State, symbol: Option<Sigma>) -> (State, Option<Sigma>, Directio
     }
 }
 
-#[test]
-fn delta_test() {
-    //10100 -> Accept
-    use Direction::*;
-    use Sigma::*;
-    use State::*;
-    assert_eq!(delta(Even, Some(One)), (Even, Some(One), Right));
-    assert_eq!(delta(Even, Some(Zero)), (Odd, Some(Zero), Right));
-    assert_eq!(delta(Odd, Some(One)), (Odd, Some(One), Right));
-    assert_eq!(delta(Odd, Some(Zero)), (Even, Some(Zero), Right));
-    assert_eq!(delta(Even, Some(Zero)), (Odd, Some(Zero), Right));
-    assert_eq!(delta(Odd, None), (Accept, None, Stand));
-    assert_eq!(delta(Accept, None), (Accept, None, Stand));
-}
-
 fn main() {
-    let dtm = DTM::new(State::Even, State::Accept, State::Reject, delta);
+    let dtm = DTM::new(Q::Even, Q::Accept, Q::Reject, delta);
 
     println!("{:?}", dtm);
 
     let input = {
-        use Sigma::*;
+        use S::*;
         vec![One, Zero, One, Zero, Zero]
     };
     let (history, tape) = dtm.run(input);
@@ -59,7 +44,7 @@ fn main() {
     println!("Tape:\n{:?}", tape);
 
     let input = {
-        use Sigma::*;
+        use S::*;
         vec![One, Zero, One, Zero]
     };
 

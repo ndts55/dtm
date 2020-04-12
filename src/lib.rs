@@ -9,12 +9,14 @@ pub enum Direction {
     Right,
 }
 
+pub type FnD<Q, S> = fn(Q, Option<S>) -> (Q, Option<S>, Direction);
+
 #[derive(Debug)]
 pub struct DTM<Q, S> {
     initial_state: Q,
     accepting_state: Q,
     rejecting_state: Q,
-    delta: fn(Q, Option<S>) -> (Q, Option<S>, Direction),
+    delta: FnD<Q, S>,
 }
 
 impl<Q, S> DTM<Q, S>
@@ -26,7 +28,7 @@ where
         initial_state: Q,
         accepting_state: Q,
         rejecting_state: Q,
-        delta: fn(Q, Option<S>) -> (Q, Option<S>, Direction),
+        delta: FnD<Q, S>,
     ) -> DTM<Q, S> {
         DTM {
             initial_state,
@@ -44,7 +46,8 @@ where
         while self.accepting_state != current_state && self.rejecting_state != current_state {
             let (next_state, new_value, direction) = (self.delta)(current_state, tape.read());
             current_state = next_state;
-            tape.write_and_move(new_value, direction);
+            tape.write(new_value);
+            tape.shift(direction);
 
             history.push(current_state);
         }
